@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <strstream>
+#include <algorithm>
 
 typedef char unsigned u8;
 typedef short unsigned u16;
@@ -21,7 +22,7 @@ typedef bool b32;
 
 struct triangle {
     vec3d p[3];
-    i16 col; 
+    i16 color; 
 };
 
 struct mesh {

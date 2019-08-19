@@ -30,36 +30,38 @@ public:
     bool OnUserCreate() override
     {
 
+        camera = {0.0f, 0.0f, 0.0f};
 
         //meshCube.tris = {
 
-		//// SOUTH
-		//{ 0.0f, 0.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 0.0f },
-		//{ 0.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f },
+        //// SOUTH
+        //{ 0.0f, 0.0f, 0.0f,    0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 0.0f },
+        //{ 0.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,    1.0f, 0.0f, 0.0f },
 
-		//// EAST                                                      
-		//{ 1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f },
-		//{ 1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f },
+        //// EAST                                                      
+        //{ 1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f },
+        //{ 1.0f, 0.0f, 0.0f,    1.0f, 1.0f, 1.0f,    1.0f, 0.0f, 1.0f },
 
-		//// NORTH                                                     
-		//{ 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f },
-		//{ 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f },
+        //// NORTH                                                     
+        //{ 1.0f, 0.0f, 1.0f,    1.0f, 1.0f, 1.0f,    0.0f, 1.0f, 1.0f },
+        //{ 1.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,    0.0f, 0.0f, 1.0f },
 
-		//// WEST                                                      
-		//{ 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f },
-		//{ 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f, 0.0f },
+        //// WEST                                                      
+        //{ 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,    0.0f, 1.0f, 0.0f },
+        //{ 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 0.0f,    0.0f, 0.0f, 0.0f },
 
-		//// TOP                                                       
-		//{ 0.0f, 1.0f, 0.0f,    0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f },
-		//{ 0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f },
+        //// TOP                                                       
+        //{ 0.0f, 1.0f, 0.0f,    0.0f, 1.0f, 1.0f,    1.0f, 1.0f, 1.0f },
+        //{ 0.0f, 1.0f, 0.0f,    1.0f, 1.0f, 1.0f,    1.0f, 1.0f, 0.0f },
 
-		//// BOTTOM                                                    
-		//{ 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f },
-		//{ 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f },
+        //// BOTTOM                                                    
+        //{ 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f },
+        //{ 1.0f, 0.0f, 1.0f,    0.0f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f },
 
-		//};
+        //};
 
-        meshCube.LoadFromObjFile("teapot.obj");
+        //meshCube.LoadFromObjFile("teapot.obj");
+        meshCube.LoadFromObjFile("ship.obj");
 
         // Projection Matrix
         matProj = MakeProjection(90.0f, (f32)ScreenHeight() / (f32)ScreenWidth(), 0.1f, 1000.0f); 
@@ -76,6 +78,9 @@ public:
 
         mat4x4 matRotZ = MakeRotationZ(theta);
         mat4x4 matRotX = MakeRotationX(theta * 0.5f);
+
+        // Store triangles for rastering later
+        std::vector<triangle> vecTrianglesToRaster;
 
         for (auto tri : meshCube.tris)
         {
@@ -94,25 +99,78 @@ public:
             MultiplyMatrixVector(triRotatedZX.p[1], triTranslated.p[1], matTrans);
             MultiplyMatrixVector(triRotatedZX.p[2], triTranslated.p[2], matTrans);
 
-            //printf("triTranslated v1(%f, %f, %f) v2(%f, %f, %f) v3(%f, %f, %f)\n", triTranslated.p[0].x,triTranslated.p[0].y,triTranslated.p[0].z,triTranslated.p[1].x,triTranslated.p[1].y,triTranslated.p[1].z,triTranslated.p[2].x,triTranslated.p[2].y,triTranslated.p[2].z);
+            vec3d normal, line1, line2;
+            line1.x = triTranslated.p[1].x - triTranslated.p[0].x;
+            line1.y = triTranslated.p[1].y - triTranslated.p[0].y;
+            line1.z = triTranslated.p[1].z - triTranslated.p[0].z;
 
-            // Project from 3D -> 2D
-            MultiplyMatrixVector(triTranslated.p[0], triProjected.p[0], matProj);
-            MultiplyMatrixVector(triTranslated.p[1], triProjected.p[1], matProj);
-            MultiplyMatrixVector(triTranslated.p[2], triProjected.p[2], matProj);
+            line2.x = triTranslated.p[2].x - triTranslated.p[0].x;
+            line2.y = triTranslated.p[2].y - triTranslated.p[0].y;
+            line2.z = triTranslated.p[2].z - triTranslated.p[0].z;
 
-            // Scale into view
-            triProjected.p[0].x = (triProjected.p[0].x + 1.0f) * 0.5f * (f32)ScreenWidth(); 
-            triProjected.p[0].y = (triProjected.p[0].y + 1.0f) * 0.5f * (f32)ScreenHeight(); 
-            triProjected.p[1].x = (triProjected.p[1].x + 1.0f) * 0.5f * (f32)ScreenWidth(); 
-            triProjected.p[1].y = (triProjected.p[1].y + 1.0f) * 0.5f * (f32)ScreenHeight(); 
-            triProjected.p[2].x = (triProjected.p[2].x + 1.0f) * 0.5f * (f32)ScreenWidth(); 
-            triProjected.p[2].y = (triProjected.p[2].y + 1.0f) * 0.5f * (f32)ScreenHeight(); 
-           
-            DrawTriangle(triProjected.p[0].x, triProjected.p[0].y,
-                triProjected.p[1].x, triProjected.p[1].y,
-                triProjected.p[2].x, triProjected.p[2].y,
-                olc::WHITE);
+            normal.x = line1.y * line2.z - line1.z * line2.y;
+			normal.y = line1.z * line2.x - line1.x * line2.z;
+			normal.z = line1.x * line2.y - line1.y * line2.x;
+
+            // It's normally normal to normalise the normal
+			float l = sqrtf(normal.x*normal.x + normal.y*normal.y + normal.z*normal.z);
+			normal.x /= l; normal.y /= l; normal.z /= l;
+
+            //if (normal.z < 0)
+            if(normal.x * (triTranslated.p[0].x - camera.x) + 
+			   normal.y * (triTranslated.p[0].y - camera.y) +
+			   normal.z * (triTranslated.p[0].z - camera.z) < 0.0f)
+            {
+
+                // Illumination
+				vec3d light_direction = { 0.0f, 0.0f, -1.0f };
+				f32 l = sqrtf(light_direction.x*light_direction.x + light_direction.y*light_direction.y + light_direction.z*light_direction.z);
+				light_direction.x /= l; light_direction.y /= l; light_direction.z /= l;
+
+				// How similar is normal to light direction
+				f32 dp = normal.x * light_direction.x + normal.y * light_direction.y + normal.z * light_direction.z;
+                f32 color = mapRange(dp, 0.0f, 1.0f, 0.0f, 255.0f); 
+                triTranslated.color = color;
+
+                // Project from 3D -> 2D
+                MultiplyMatrixVector(triTranslated.p[0], triProjected.p[0], matProj);
+                MultiplyMatrixVector(triTranslated.p[1], triProjected.p[1], matProj);
+                MultiplyMatrixVector(triTranslated.p[2], triProjected.p[2], matProj);
+                triProjected.color = triTranslated.color;
+
+                // Scale into view
+                triProjected.p[0].x = (triProjected.p[0].x + 1.0f) * 0.5f * (f32)ScreenWidth(); 
+                triProjected.p[0].y = (triProjected.p[0].y + 1.0f) * 0.5f * (f32)ScreenHeight(); 
+                triProjected.p[1].x = (triProjected.p[1].x + 1.0f) * 0.5f * (f32)ScreenWidth(); 
+                triProjected.p[1].y = (triProjected.p[1].y + 1.0f) * 0.5f * (f32)ScreenHeight(); 
+                triProjected.p[2].x = (triProjected.p[2].x + 1.0f) * 0.5f * (f32)ScreenWidth(); 
+                triProjected.p[2].y = (triProjected.p[2].y + 1.0f) * 0.5f * (f32)ScreenHeight();
+
+                // Store triangle for painter's sorting
+				vecTrianglesToRaster.push_back(triProjected);
+            }
+            
+            // Sort triangles from back to front
+            sort(vecTrianglesToRaster.begin(), vecTrianglesToRaster.end(), [](triangle &t1, triangle &t2)
+            {
+                float z1 = (t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0f;
+                float z2 = (t2.p[0].z + t2.p[1].z + t2.p[2].z) / 3.0f;
+                return z1 > z2;
+            });
+            
+            for (auto &triProjected : vecTrianglesToRaster)
+            {
+                FillTriangle(triProjected.p[0].x, triProjected.p[0].y,
+                    triProjected.p[1].x, triProjected.p[1].y,
+                    triProjected.p[2].x, triProjected.p[2].y,
+                    triProjected.color);
+              
+                //DrawTriangle(triProjected.p[0].x, triProjected.p[0].y,
+                    //triProjected.p[1].x, triProjected.p[1].y,
+                    //triProjected.p[2].x, triProjected.p[2].y,
+                    //olc::WHITE);
+            }
+
         }
 
         // draw helper axes
