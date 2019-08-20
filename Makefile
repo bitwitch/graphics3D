@@ -1,5 +1,5 @@
 LIBRARIES = -framework Cocoa -framework Quartz -framework OpenGL -lcocoawindowing_s -lpng
-LIBDIR = -L ./bin
+LIBDIR = -L ./lib
 INCLUDEDIR = -I ./include
 CPPFLAGS = -std=c++14 -Wall -Wno-missing-braces
 

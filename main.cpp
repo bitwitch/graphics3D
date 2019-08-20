@@ -150,7 +150,7 @@ public:
 				vecTrianglesToRaster.push_back(triProjected);
             }
             
-            // Sort triangles from back to front
+            // Sort from back to front, janky ass painters algorithm, slow as fuck
             sort(vecTrianglesToRaster.begin(), vecTrianglesToRaster.end(), [](triangle &t1, triangle &t2)
             {
                 float z1 = (t1.p[0].z + t1.p[1].z + t1.p[2].z) / 3.0f;
@@ -174,8 +174,9 @@ public:
         }
 
         // draw helper axes
-		DrawLine(0.0f, 0.0f, 0.0f, 100.0f, olc::BLUE);    // y-axis
-		DrawLine(0.0f, 0.0f, 100.0f, 0.0f, olc::GREEN);   // x-axis 
+		DrawLine(0.0f, 0.0f, 100.0f, 0.0f, olc::GREEN);    // x-axis 
+		DrawLine(0.0f, 0.0f, 0.0f, 100.0f, olc::BLUE);     // y-axis
+		DrawLine(0.0f, 0.0f, 50.0f, 50.0f, olc::RED);      // z-axis 
         return true;    
     }
 
